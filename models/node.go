@@ -43,6 +43,9 @@ func (node *Node) ToInflux() (tags imodels.Tags, fields imodels.Fields) {
 	}
 
 	if nodeinfo := node.Nodeinfo; nodeinfo != nil {
+		if len(nodeinfo.System.SiteCode) > 0 {
+			tags.SetString("site_code", nodeinfo.System.SiteCode)
+		}
 		if owner := nodeinfo.Owner; owner != nil {
 			tags.SetString("owner", owner.Contact)
 		}
