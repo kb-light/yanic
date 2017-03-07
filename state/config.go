@@ -30,6 +30,10 @@ type Config struct {
 		NodesPath string
 		GraphPath string
 	}
+	Debug struct {
+		Enable bool
+		File   string
+	}
 	Influxdb struct {
 		Enable         bool
 		Address        string

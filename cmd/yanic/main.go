@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/FreifunkBremen/yanic/database"
+	"github.com/FreifunkBremen/yanic/debugdatabase"
 	"github.com/FreifunkBremen/yanic/influxdb"
 	"github.com/FreifunkBremen/yanic/meshviewer"
 	"github.com/FreifunkBremen/yanic/respond"
@@ -38,14 +39,21 @@ func main() {
 
 	config = state.ReadConfigFile(configFile)
 
-	if config.Influxdb.Enable {
+	if INFLUXDB_BOOTSTRAP && config.Influxdb.Enable {
 		db = influxdb.New(config)
 		defer db.Close()
 
-		if importPath != "" {
-			importRRD(importPath)
-			return
-		}
+	}
+
+	if DEBUGDATABASE_BOOTSTRAP && config.Debug.Enable {
+		db = debugdatabase.New(config)
+		defer db.Close()
+
+	}
+
+	if db != nil && importPath != "" {
+		importRRD(importPath)
+		return
 	}
 
 	nodes = state.NewNodes(config)
