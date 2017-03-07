@@ -1,4 +1,4 @@
-package models
+package meshviewer
 
 import (
 	"testing"
@@ -6,46 +6,24 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/FreifunkBremen/yanic/data"
+	"github.com/FreifunkBremen/yanic/state"
 )
 
-func TestGlobalStats(t *testing.T) {
-	stats := NewGlobalStats(createTestNodes())
-
-	assert := assert.New(t)
-	assert.EqualValues(1, stats.Gateways)
-	assert.EqualValues(3, stats.Nodes)
-	assert.EqualValues(25, stats.Clients)
-
-	// check models
-	assert.Len(stats.Models, 2)
-	assert.EqualValues(2, stats.Models["TP-Link 841"])
-	assert.EqualValues(1, stats.Models["Xeon Multi-Core"])
-
-	// check firmwares
-	assert.Len(stats.Firmwares, 1)
-	assert.EqualValues(1, stats.Firmwares["2016.1.6+entenhausen1"])
-
-	fields := stats.Fields()
-
-	// check fields
-	assert.EqualValues(3, fields["nodes"])
-}
-
 func TestNodesV1(t *testing.T) {
-	nodes := createTestNodes().GetNodesV1()
+	nodes := GetNodesV1(createTestNodes())
 
 	assert := assert.New(t)
 	assert.Len(nodes.List, 2)
 }
 func TestNodesV2(t *testing.T) {
-	nodes := createTestNodes().GetNodesV2()
+	nodes := GetNodesV2(createTestNodes())
 
 	assert := assert.New(t)
 	assert.Len(nodes.List, 2)
 }
 
-func createTestNodes() *Nodes {
-	nodes := NewNodes(&Config{})
+func createTestNodes() *state.Nodes {
+	nodes := state.NewNodes(&state.Config{})
 
 	nodeData := &data.ResponseData{
 		Statistics: &data.Statistics{

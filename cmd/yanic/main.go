@@ -8,18 +8,20 @@ import (
 	"syscall"
 
 	"github.com/FreifunkBremen/yanic/database"
-	"github.com/FreifunkBremen/yanic/models"
+	"github.com/FreifunkBremen/yanic/influxdb"
+	"github.com/FreifunkBremen/yanic/meshviewer"
 	"github.com/FreifunkBremen/yanic/respond"
 	"github.com/FreifunkBremen/yanic/rrd"
+	"github.com/FreifunkBremen/yanic/state"
 	"github.com/FreifunkBremen/yanic/webserver"
 )
 
 var (
 	configFile string
-	config     *models.Config
+	config     *state.Config
 	collector  *respond.Collector
-	db         *database.DB
-	nodes      *models.Nodes
+	db         database.DB
+	nodes      *state.Nodes
 )
 
 func main() {
@@ -34,10 +36,10 @@ func main() {
 		log.SetFlags(0)
 	}
 
-	config = models.ReadConfigFile(configFile)
+	config = state.ReadConfigFile(configFile)
 
 	if config.Influxdb.Enable {
-		db = database.New(config)
+		db = influxdb.New(config)
 		defer db.Close()
 
 		if importPath != "" {
@@ -46,8 +48,9 @@ func main() {
 		}
 	}
 
-	nodes = models.NewNodes(config)
+	nodes = state.NewNodes(config)
 	nodes.Start()
+	meshviewer.Start(config, nodes)
 
 	if config.Respondd.Enable {
 		collector = respond.NewCollector(db, nodes, config.Respondd.Interface)
@@ -71,12 +74,10 @@ func main() {
 func importRRD(path string) {
 	log.Println("importing RRD from", path)
 	for ds := range rrd.Read(path) {
-		db.AddPoint(
-			database.MeasurementGlobal,
-			nil,
-			map[string]interface{}{
-				"nodes":         uint32(ds.Nodes),
-				"clients.total": uint32(ds.Clients),
+		db.AddGlobal(
+			&state.GlobalStats{
+				Nodes:   uint32(ds.Nodes),
+				Clients: uint32(ds.Clients),
 			},
 			ds.Time,
 		)

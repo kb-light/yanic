@@ -1,4 +1,4 @@
-package models
+package state
 
 import (
 	"io/ioutil"
@@ -20,13 +20,15 @@ type Config struct {
 	}
 	Nodes struct {
 		Enable       bool
-		NodesVersion int
-		NodesPath    string
-		GraphPath    string
 		StatePath    string
 		SaveInterval Duration // Save nodes periodically
 		OfflineAfter Duration // Set node to offline if not seen within this period
 		PruneAfter   Duration // Remove nodes after n days of inactivity
+	}
+	Meshviewer struct {
+		Version   int
+		NodesPath string
+		GraphPath string
 	}
 	Influxdb struct {
 		Enable         bool

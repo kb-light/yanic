@@ -1,4 +1,4 @@
-package models
+package state
 
 // CounterMap to manage multiple values
 type CounterMap map[string]uint32
@@ -52,17 +52,5 @@ func (m CounterMap) Increment(key string) {
 	if key != "" {
 		val := m[key]
 		m[key] = val + 1
-	}
-}
-
-// Fields returns fields for InfluxDB
-func (stats *GlobalStats) Fields() map[string]interface{} {
-	return map[string]interface{}{
-		"nodes":          stats.Nodes,
-		"gateways":       stats.Gateways,
-		"clients.total":  stats.Clients,
-		"clients.wifi":   stats.ClientsWifi,
-		"clients.wifi24": stats.ClientsWifi24,
-		"clients.wifi5":  stats.ClientsWifi5,
 	}
 }

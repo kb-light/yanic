@@ -14,20 +14,9 @@ bind    = "127.0.0.1:8080"
 webroot = "/var/www/html/meshviewer"
 
 
+
 [nodes]
 enable         = true
-# structur of nodes.json, which to support
-# version 1 is to support legacy meshviewer (which are in master branch)
-#    i.e. https://github.com/ffnord/meshviewer/tree/master
-# version 2 is to support new version of meshviewer (which are in legacy develop branch or newer)
-#    i.e. https://github.com/ffnord/meshviewer/tree/dev
-#         https://github.com/ffrgb/meshviewer/tree/develop
-nodes_version  = 2
-# path where to store nodes.json
-nodes_path     = "/var/www/html/meshviewer/data/nodes.json"
-# path where to store graph.json
-graph_path     = "/var/www/html/meshviewer/data/graph.json"
-
 # state-version of nodes.json to store cached data,
 #  these is the directly collected respondd data
 state_path     = "/var/lib/collector/state.json"
@@ -41,6 +30,19 @@ offline_after = "10m"
 # Prune offline nodes after a time of inactivity
 prune_after = "7d"
 
+
+[meshviewer]
+# structur of nodes.json, which to support
+# version 1 is to support legacy meshviewer (which are in master branch)
+#    i.e. https://github.com/ffnord/meshviewer/tree/master
+# version 2 is to support new version of meshviewer (which are in legacy develop branch or newer)
+#    i.e. https://github.com/ffnord/meshviewer/tree/dev
+#         https://github.com/ffrgb/meshviewer/tree/develop
+version  = 2
+# path where to store nodes.json
+nodes_path     = "/var/www/html/meshviewer/data/nodes.json"
+# path where to store graph.json
+graph_path     = "/var/www/html/meshviewer/data/graph.json"
 
 # Save collected data to InfluxDB
 # there would be the following measurments:

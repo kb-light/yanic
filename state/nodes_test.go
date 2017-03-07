@@ -1,4 +1,4 @@
-package models
+package state
 
 import (
 	"io/ioutil"
@@ -55,7 +55,7 @@ func TestLoadAndSave(t *testing.T) {
 	nodes.load()
 
 	tmpfile, _ := ioutil.TempFile("/tmp", "nodes")
-	save(nodes, tmpfile.Name())
+	SaveJSON(nodes, tmpfile.Name())
 	os.Remove(tmpfile.Name())
 
 	assert.Len(nodes.List, 1)
