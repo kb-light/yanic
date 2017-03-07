@@ -1,4 +1,4 @@
-package state
+package influxdb
 
 import (
 	"testing"
@@ -6,28 +6,21 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/FreifunkBremen/yanic/data"
+	"github.com/FreifunkBremen/yanic/state"
 )
 
 func TestGlobalStats(t *testing.T) {
-	stats := NewGlobalStats(createTestNodes())
+	stats := state.NewGlobalStats(createTestNodes())
 
 	assert := assert.New(t)
-	assert.EqualValues(1, stats.Gateways)
-	assert.EqualValues(3, stats.Nodes)
-	assert.EqualValues(25, stats.Clients)
+	fields := GlobalStatsFields(stats)
 
-	// check models
-	assert.Len(stats.Models, 2)
-	assert.EqualValues(2, stats.Models["TP-Link 841"])
-	assert.EqualValues(1, stats.Models["Xeon Multi-Core"])
-
-	// check firmwares
-	assert.Len(stats.Firmwares, 1)
-	assert.EqualValues(1, stats.Firmwares["2016.1.6+entenhausen1"])
+	// check fields
+	assert.EqualValues(3, fields["nodes"])
 }
 
-func createTestNodes() *Nodes {
-	nodes := NewNodes(&Config{})
+func createTestNodes() *state.Nodes {
+	nodes := state.NewNodes(&state.Config{})
 
 	nodeData := &data.ResponseData{
 		Statistics: &data.Statistics{
