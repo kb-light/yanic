@@ -48,9 +48,7 @@ func (nodes *Nodes) BuildGraph() *Graph {
 		vpn:     make(map[string]interface{}),
 	}
 
-	nodes.RLock()
-	builder.readNodes(nodes.List)
-	nodes.RUnlock()
+	builder.readNodes(nodes)
 
 	graph := &Graph{Version: 1}
 	graph.Batadv.Directed = false
@@ -58,9 +56,12 @@ func (nodes *Nodes) BuildGraph() *Graph {
 	return graph
 }
 
-func (builder *graphBuilder) readNodes(nodes map[string]*Node) {
+func (builder *graphBuilder) readNodes(nodes *Nodes) {
+	nodes.RLock()
+	defer nodes.RUnlock()
+
 	// Fill mac->id map
-	for sourceID, node := range nodes {
+	for sourceID, node := range nodes.List {
 		if nodeinfo := node.Nodeinfo; nodeinfo != nil {
 			// is VPN address?
 			if nodeinfo.VPN {
@@ -91,7 +92,7 @@ func (builder *graphBuilder) readNodes(nodes map[string]*Node) {
 	}
 
 	// Add links
-	for sourceID, node := range nodes {
+	for sourceID, node := range nodes.List {
 		if node.Flags.Online {
 			if neighbours := node.Neighbours; neighbours != nil {
 				// Batman neighbours
