@@ -1,4 +1,4 @@
-// +build !demodatabase
+// +build !exampledatabase
 
 package main
 

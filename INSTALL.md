@@ -29,6 +29,18 @@ export PATH=$PATH:$GOPATH/bin
 go get -v -u github.com/FreifunkBremen/yanic/cmd/...
 ```
 
+#### Work with other databases
+If you did like a other database solution like influxdb,
+you are welcome to create another subpackage from database like the exampledatabase.
+
+For building a other database we need also a new `build.X.go` under `cmd/yanic/` with a new compile tag.
+
+You could build this version with the tag parameter:
+
+```sh
+go get -v -u -tags exampledatabase github.com/FreifunkBremen/yanic/cmd/...
+```
+
 ### Configurate
 ```sh
 cp /opt/go/src/github.com/FreifunkBremen/yanic/config_example.toml /etc/yanic.conf
