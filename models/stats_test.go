@@ -49,7 +49,7 @@ func createTestNodes() *Nodes {
 
 	nodeData := &data.ResponseData{
 		Statistics: &data.Statistics{
-			Clients: data.Clients{
+			Clients: &data.Clients{
 				Total: 23,
 			},
 		},
@@ -64,7 +64,7 @@ func createTestNodes() *Nodes {
 
 	nodes.Update("112233445566", &data.ResponseData{
 		Statistics: &data.Statistics{
-			Clients: data.Clients{
+			Clients: &data.Clients{
 				Total: 2,
 			},
 		},
