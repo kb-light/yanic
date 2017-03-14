@@ -250,7 +250,5 @@ func (coll *Collector) globalStatsWorker() {
 func (coll *Collector) saveGlobalStats() {
 	stats := runtime.NewGlobalStats(coll.nodes)
 
-	coll.db.AddGlobal(stats, time.Now())
-	coll.db.AddCounterMap(database.CounterMeasurementFirmware, stats.Firmwares)
-	coll.db.AddCounterMap(database.CounterMeasurementModel, stats.Models)
+	coll.db.AddStatistics(stats, time.Now())
 }

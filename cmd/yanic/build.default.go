@@ -1,8 +1,15 @@
-// +build !debugdatabase
+// +build !demodatabase
 
 package main
 
-const (
-	INFLUXDB_BOOTSTRAP      = true
-	DEBUGDATABASE_BOOTSTRAP = false
+import (
+	"github.com/FreifunkBremen/yanic/database"
+	"github.com/FreifunkBremen/yanic/database/influxdb"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
+
+func connectDB(config *runtime.Config) (db database.DB) {
+	db = influxdb.New(config.Database.Connection)
+	database.Start(db, config)
+	return
+}

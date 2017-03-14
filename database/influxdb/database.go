@@ -22,19 +22,19 @@ const (
 )
 
 type DB struct {
-	config *runtime.Config
+	config *config
 	client client.Client
 	points chan *client.Point
 	wg     sync.WaitGroup
-	quit   chan struct{}
 }
 
-func New(config *runtime.Config) *DB {
+func New(configMap map[string]interface{}) *DB {
+	config := toConfig(configMap)
 	// Make client
 	c, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr:     config.Influxdb.Address,
-		Username: config.Influxdb.Username,
-		Password: config.Influxdb.Password,
+		Addr:     config.Address,
+		Username: config.Username,
+		Password: config.Password,
 	})
 
 	if err != nil {
@@ -45,22 +45,20 @@ func New(config *runtime.Config) *DB {
 		config: config,
 		client: c,
 		points: make(chan *client.Point, 1000),
-		quit:   make(chan struct{}),
 	}
 
 	db.wg.Add(1)
 	go db.addWorker()
-	go db.deleteWorker()
 
 	return db
 }
 
-func (db *DB) DeleteNode() {
-	query := fmt.Sprintf("delete from %s where time < now() - %ds", MeasurementNode, db.config.Influxdb.DeleteAfter.Duration/time.Second)
-	db.client.Query(client.NewQuery(query, db.config.Influxdb.Database, "m"))
+func (db *DB) DeleteNode(deleteAfter time.Duration) {
+	query := fmt.Sprintf("delete from %s where time < now() - %ds", MeasurementNode, deleteAfter/time.Second)
+	db.client.Query(client.NewQuery(query, db.config.Database, "m"))
 }
 
-func (db *DB) AddPoint(name string, tags models.Tags, fields models.Fields, time time.Time) {
+func (db *DB) addPoint(name string, tags models.Tags, fields models.Fields, time time.Time) {
 	point, err := client.NewPoint(name, tags.Map(), fields, time)
 	if err != nil {
 		panic(err)
@@ -74,7 +72,7 @@ func (db *DB) AddPoint(name string, tags models.Tags, fields models.Fields, time
 func (db *DB) addCounterMap(name string, m runtime.CounterMap) {
 	now := time.Now()
 	for key, count := range m {
-		db.AddPoint(
+		db.addPoint(
 			name,
 			models.Tags{
 				models.Tag{Key: []byte("value"), Value: []byte(key)},
@@ -85,50 +83,30 @@ func (db *DB) addCounterMap(name string, m runtime.CounterMap) {
 	}
 }
 
-func (db *DB) AddCounterFirmware(m runtime.CounterMap) {
-	db.addCounterMap(CounterMeasurementFirmware, m)
-}
-func (db *DB) AddCounterModel(m runtime.CounterMap) {
-	db.addCounterMap(CounterMeasurementModel, m)
-}
-
-// AddGlobal implementation of database
-func (db *DB) AddGlobal(stats *runtime.GlobalStats, time time.Time) {
-	db.AddPoint(MeasurementGlobal, nil, GlobalStatsFields(stats), time)
+// AddStatistics implementation of database
+func (db *DB) AddStatistics(stats *runtime.GlobalStats, time time.Time) {
+	db.addPoint(MeasurementGlobal, nil, GlobalStatsFields(stats), time)
+	db.addCounterMap(CounterMeasurementModel, stats.Models)
+	db.addCounterMap(CounterMeasurementFirmware, stats.Firmwares)
 }
 
 // AddNode implementation of database
 func (db *DB) AddNode(nodeID string, node *runtime.Node) {
 	tags, fields := nodeToInflux(node)
-	db.AddPoint(MeasurementNode, tags, fields, time.Now())
+	db.addPoint(MeasurementNode, tags, fields, time.Now())
 }
 
 // Close all connection and clean up
 func (db *DB) Close() {
-	close(db.quit)
 	close(db.points)
 	db.wg.Wait()
 	db.client.Close()
 }
 
-// prunes node-specific data periodically
-func (db *DB) deleteWorker() {
-	ticker := time.NewTicker(db.config.Influxdb.DeleteInterval.Duration)
-	for {
-		select {
-		case <-ticker.C:
-			db.DeleteNode()
-		case <-db.quit:
-			ticker.Stop()
-			return
-		}
-	}
-}
-
 // stores data points in batches into the influxdb
 func (db *DB) addWorker() {
 	bpConfig := client.BatchPointsConfig{
-		Database:  db.config.Influxdb.Database,
+		Database:  db.config.Database,
 		Precision: "m",
 	}
 

@@ -8,8 +8,6 @@ import (
 	"syscall"
 
 	"github.com/FreifunkBremen/yanic/database"
-	"github.com/FreifunkBremen/yanic/database/exampledatabase"
-	"github.com/FreifunkBremen/yanic/database/influxdb"
 	"github.com/FreifunkBremen/yanic/meshviewer"
 	"github.com/FreifunkBremen/yanic/respond"
 	"github.com/FreifunkBremen/yanic/rrd"
@@ -39,15 +37,10 @@ func main() {
 
 	config = runtime.ReadConfigFile(configFile)
 
-	if INFLUXDB_BOOTSTRAP && config.Influxdb.Enable {
-		db = influxdb.New(config)
-		defer db.Close()
+	if config.Database.Enable {
+		db = connectDB(config)
 	}
-
-	if DEBUGDATABASE_BOOTSTRAP && config.Debug.Enable {
-		db = exampledatabase.New(config)
-		defer db.Close()
-	}
+	defer database.Close(db)
 
 	if db != nil && importPath != "" {
 		importRRD(importPath)
@@ -80,7 +73,7 @@ func main() {
 func importRRD(path string) {
 	log.Println("importing RRD from", path)
 	for ds := range rrd.Read(path) {
-		db.AddGlobal(
+		db.AddStatistics(
 			&runtime.GlobalStats{
 				Nodes:   uint32(ds.Nodes),
 				Clients: uint32(ds.Clients),

@@ -30,18 +30,11 @@ type Config struct {
 		NodesPath string
 		GraphPath string
 	}
-	Debug struct {
-		Enable bool
-		File   string
-	}
-	Influxdb struct {
+	Database struct {
 		Enable         bool
-		Address        string
-		Database       string
-		Username       string
-		Password       string
 		DeleteInterval Duration // Delete stats of nodes every n minutes
 		DeleteAfter    Duration // Delete stats of nodes till now-deletetill n minutes
+		Connection     map[string]interface{}
 	}
 }
 

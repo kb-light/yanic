@@ -10,14 +10,24 @@ import (
 )
 
 type DB struct {
-	config *runtime.Config
+	config *config
 	file   *os.File
 }
+type config struct {
+	Path string
+}
 
-func New(config *runtime.Config) *DB {
-	file, err := os.OpenFile(config.Debug.File, os.O_APPEND|os.O_WRONLY, 0600)
+func toConfig(configMap map[string]interface{}) *config {
+	return &config{
+		Path: configMap["path"].(string),
+	}
+}
+
+func New(configMap map[string]interface{}) *DB {
+	config := toConfig(configMap)
+	file, err := os.OpenFile(config.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
-		log.Println("File could not opened: ", config.Debug.File)
+		log.Println("File could not opened: ", config.Path)
 		return nil
 	}
 	return &DB{config: config, file: file}
@@ -26,15 +36,11 @@ func (db *DB) AddNode(nodeID string, node *runtime.Node) {
 	db.log("AddNode: [", nodeID, "] clients: ", node.Statistics.Clients.Total)
 }
 
-func (db *DB) AddGlobal(stats *runtime.GlobalStats, time time.Time) {
-	db.log("AddGlobal: [", time.String(), "] nodes: ", stats.Nodes, ", clients: ", stats.Clients)
+func (db *DB) AddStatistics(stats *runtime.GlobalStats, time time.Time) {
+	db.log("AddStatistics: [", time.String(), "] nodes: ", stats.Nodes, ", clients: ", stats.Clients)
 }
 
-func (db *DB) AddCounterMap(name string, m runtime.CounterMap) {
-	db.log("AddCounterMap: [", name, "] count: ", len(m))
-}
-
-func (db *DB) DeleteNode() {
+func (db *DB) DeleteNode(deleteAfter time.Duration) {
 	db.log("DeleteNode")
 }
 

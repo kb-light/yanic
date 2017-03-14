@@ -92,7 +92,7 @@ func (builder *graphBuilder) readNodes(nodes map[string]*runtime.Node) {
 
 	// Add links
 	for sourceID, node := range nodes {
-		if node.Flags.Online {
+		if node.Online {
 			if neighbours := node.Neighbours; neighbours != nil {
 				// Batman neighbours
 				for _, batadvNeighbours := range neighbours.Batadv {
