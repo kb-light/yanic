@@ -12,7 +12,7 @@ import (
 	"github.com/FreifunkBremen/yanic/data"
 	"github.com/FreifunkBremen/yanic/database"
 	"github.com/FreifunkBremen/yanic/jsontime"
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 // Collector for a specificle respond messages
@@ -21,13 +21,13 @@ type Collector struct {
 	queue      chan *Response // received responses
 	iface      string
 	db         database.DB
-	nodes      *state.Nodes
+	nodes      *runtime.Nodes
 	interval   time.Duration // Interval for multicast packets
 	stop       chan interface{}
 }
 
 // NewCollector creates a Collector struct
-func NewCollector(db database.DB, nodes *state.Nodes, iface string) *Collector {
+func NewCollector(db database.DB, nodes *runtime.Nodes, iface string) *Collector {
 	linkLocalAddr, err := getLinkLocalAddr(iface)
 	if err != nil {
 		log.Panic(err)
@@ -124,7 +124,7 @@ func (coll *Collector) sendUnicasts(seenBefore jsontime.Time) {
 	seenAfter := seenBefore.Add(-time.Minute * 10)
 
 	// Select online nodes that has not been seen recently
-	nodes := coll.nodes.Select(func(n *state.Node) bool {
+	nodes := coll.nodes.Select(func(n *runtime.Node) bool {
 		return n.Lastseen.After(seenAfter) && n.Lastseen.Before(seenBefore) && n.Address != nil
 	})
 
@@ -248,7 +248,7 @@ func (coll *Collector) globalStatsWorker() {
 
 // saves global statistics
 func (coll *Collector) saveGlobalStats() {
-	stats := state.NewGlobalStats(coll.nodes)
+	stats := runtime.NewGlobalStats(coll.nodes)
 
 	coll.db.AddGlobal(stats, time.Now())
 	coll.db.AddCounterMap(database.CounterMeasurementFirmware, stats.Firmwares)

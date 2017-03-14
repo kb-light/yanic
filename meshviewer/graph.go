@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 // Graph a struct for all links between the nodes
@@ -42,7 +42,7 @@ type graphBuilder struct {
 }
 
 // BuildGraph transform from nodes (Neighbours) to Graph
-func BuildGraph(nodes *state.Nodes) *Graph {
+func BuildGraph(nodes *runtime.Nodes) *Graph {
 	builder := &graphBuilder{
 		macToID: make(map[string]string),
 		idToMac: make(map[string]string),
@@ -58,7 +58,7 @@ func BuildGraph(nodes *state.Nodes) *Graph {
 	return graph
 }
 
-func (builder *graphBuilder) readNodes(nodes map[string]*state.Node) {
+func (builder *graphBuilder) readNodes(nodes map[string]*runtime.Node) {
 	// Fill mac->id map
 	for sourceID, node := range nodes {
 		if nodeinfo := node.Nodeinfo; nodeinfo != nil {

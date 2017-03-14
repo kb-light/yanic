@@ -6,11 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/FreifunkBremen/yanic/data"
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 func TestGlobalStats(t *testing.T) {
-	stats := state.NewGlobalStats(createTestNodes())
+	stats := runtime.NewGlobalStats(createTestNodes())
 
 	assert := assert.New(t)
 	fields := GlobalStatsFields(stats)
@@ -19,8 +19,8 @@ func TestGlobalStats(t *testing.T) {
 	assert.EqualValues(3, fields["nodes"])
 }
 
-func createTestNodes() *state.Nodes {
-	nodes := state.NewNodes(&state.Config{})
+func createTestNodes() *runtime.Nodes {
+	nodes := runtime.NewNodes(&runtime.Config{})
 
 	nodeData := &data.ResponseData{
 		Statistics: &data.Statistics{

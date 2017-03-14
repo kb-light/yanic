@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/FreifunkBremen/yanic/data"
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 type TestNode struct {
@@ -31,10 +31,10 @@ func TestGenerateGraph(t *testing.T) {
 	// TODO more tests required
 }
 
-func testGetNodesByFile(files ...string) *state.Nodes {
+func testGetNodesByFile(files ...string) *runtime.Nodes {
 
-	nodes := &state.Nodes{
-		List: make(map[string]*state.Node),
+	nodes := &runtime.Nodes{
+		List: make(map[string]*runtime.Node),
 	}
 
 	for _, file := range files {
@@ -48,17 +48,17 @@ func testGetNodesByFile(files ...string) *state.Nodes {
 	return nodes
 }
 
-func testGetNodeByFile(filename string) *state.Node {
+func testGetNodeByFile(filename string) *runtime.Node {
 	testnode := &TestNode{}
 	testfile(filename, testnode)
-	return &state.Node{
+	return &runtime.Node{
 		Nodeinfo:   testnode.Nodeinfo,
 		Neighbours: testnode.Neighbours,
 	}
 }
 
 func testfile(name string, obj interface{}) {
-	file, err := ioutil.ReadFile("../state/testdata/" + name)
+	file, err := ioutil.ReadFile("../runtime/testdata/" + name)
 	if err != nil {
 		panic(err)
 	}

@@ -3,17 +3,22 @@ package meshviewer
 import (
 	"github.com/FreifunkBremen/yanic/data"
 	"github.com/FreifunkBremen/yanic/jsontime"
-	"github.com/FreifunkBremen/yanic/state"
 )
 
 // Node struct
 type Node struct {
 	Firstseen  jsontime.Time    `json:"firstseen"`
 	Lastseen   jsontime.Time    `json:"lastseen"`
-	Flags      state.Flags      `json:"flags"`
+	Flags      Flags            `json:"flags"`
 	Statistics *Statistics      `json:"statistics"`
 	Nodeinfo   *data.NodeInfo   `json:"nodeinfo"`
 	Neighbours *data.Neighbours `json:"-"`
+}
+
+// Flags status of node set by collector for the meshviewer
+type Flags struct {
+	Online  bool `json:"online"`
+	Gateway bool `json:"gateway"`
 }
 
 // Statistics a meshviewer spezifisch struct, diffrent from respondd

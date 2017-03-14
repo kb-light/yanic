@@ -9,25 +9,27 @@ import (
 	"github.com/influxdata/influxdb/client/v2"
 	"github.com/influxdata/influxdb/models"
 
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 const (
-	MeasurementNode   = "node"   // Measurement for per-node statistics
-	MeasurementGlobal = "global" // Measurement for summarized global statistics
-	batchMaxSize      = 500
-	batchTimeout      = 5 * time.Second
+	MeasurementNode            = "node"     // Measurement for per-node statistics
+	MeasurementGlobal          = "global"   // Measurement for summarized global statistics
+	CounterMeasurementFirmware = "firmware" // Measurement for firmware statistics
+	CounterMeasurementModel    = "model"    // Measurement for model statistics
+	batchMaxSize               = 500
+	batchTimeout               = 5 * time.Second
 )
 
 type DB struct {
-	config *state.Config
+	config *runtime.Config
 	client client.Client
 	points chan *client.Point
 	wg     sync.WaitGroup
 	quit   chan struct{}
 }
 
-func New(config *state.Config) *DB {
+func New(config *runtime.Config) *DB {
 	// Make client
 	c, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr:     config.Influxdb.Address,
@@ -69,7 +71,7 @@ func (db *DB) AddPoint(name string, tags models.Tags, fields models.Fields, time
 // Saves the values of a CounterMap in the database.
 // The key are used as 'value' tag.
 // The value is used as 'counter' field.
-func (db *DB) AddCounterMap(name string, m state.CounterMap) {
+func (db *DB) addCounterMap(name string, m runtime.CounterMap) {
 	now := time.Now()
 	for key, count := range m {
 		db.AddPoint(
@@ -83,14 +85,21 @@ func (db *DB) AddCounterMap(name string, m state.CounterMap) {
 	}
 }
 
+func (db *DB) AddCounterFirmware(m runtime.CounterMap) {
+	db.addCounterMap(CounterMeasurementFirmware, m)
+}
+func (db *DB) AddCounterModel(m runtime.CounterMap) {
+	db.addCounterMap(CounterMeasurementModel, m)
+}
+
 // AddGlobal implementation of database
-func (db *DB) AddGlobal(stats *state.GlobalStats, time time.Time) {
+func (db *DB) AddGlobal(stats *runtime.GlobalStats, time time.Time) {
 	db.AddPoint(MeasurementGlobal, nil, GlobalStatsFields(stats), time)
 }
 
 // AddNode implementation of database
-func (db *DB) AddNode(nodeID string, node *state.Node) {
-	tags, fields := NodeToInflux(node)
+func (db *DB) AddNode(nodeID string, node *runtime.Node) {
+	tags, fields := nodeToInflux(node)
 	db.AddPoint(MeasurementNode, tags, fields, time.Now())
 }
 

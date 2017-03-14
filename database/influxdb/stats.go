@@ -1,11 +1,11 @@
 package influxdb
 
 import (
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 // GlobalStatsFields returns fields for InfluxDB
-func GlobalStatsFields(stats *state.GlobalStats) map[string]interface{} {
+func GlobalStatsFields(stats *runtime.GlobalStats) map[string]interface{} {
 	return map[string]interface{}{
 		"nodes":          stats.Nodes,
 		"gateways":       stats.Gateways,

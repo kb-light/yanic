@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/FreifunkBremen/yanic/data"
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 func TestNodesV1(t *testing.T) {
@@ -22,8 +22,8 @@ func TestNodesV2(t *testing.T) {
 	assert.Len(nodes.List, 2)
 }
 
-func createTestNodes() *state.Nodes {
-	nodes := state.NewNodes(&state.Config{})
+func createTestNodes() *runtime.Nodes {
+	nodes := runtime.NewNodes(&runtime.Config{})
 
 	nodeData := &data.ResponseData{
 		Statistics: &data.Statistics{

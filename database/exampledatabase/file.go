@@ -1,4 +1,4 @@
-package debugdatabase
+package exampledatabase
 
 import (
 	"fmt"
@@ -6,15 +6,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 type DB struct {
-	config *state.Config
+	config *runtime.Config
 	file   *os.File
 }
 
-func New(config *state.Config) *DB {
+func New(config *runtime.Config) *DB {
 	file, err := os.OpenFile(config.Debug.File, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		log.Println("File could not opened: ", config.Debug.File)
@@ -22,15 +22,15 @@ func New(config *state.Config) *DB {
 	}
 	return &DB{config: config, file: file}
 }
-func (db *DB) AddNode(nodeID string, node *state.Node) {
+func (db *DB) AddNode(nodeID string, node *runtime.Node) {
 	db.log("AddNode: [", nodeID, "] clients: ", node.Statistics.Clients.Total)
 }
 
-func (db *DB) AddGlobal(stats *state.GlobalStats, time time.Time) {
+func (db *DB) AddGlobal(stats *runtime.GlobalStats, time time.Time) {
 	db.log("AddGlobal: [", time.String(), "] nodes: ", stats.Nodes, ", clients: ", stats.Clients)
 }
 
-func (db *DB) AddCounterMap(name string, m state.CounterMap) {
+func (db *DB) AddCounterMap(name string, m runtime.CounterMap) {
 	db.log("AddCounterMap: [", name, "] count: ", len(m))
 }
 

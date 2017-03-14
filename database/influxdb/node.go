@@ -5,11 +5,11 @@ import (
 
 	models "github.com/influxdata/influxdb/models"
 
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 // NodeToInflux Returns tags and fields for InfluxDB
-func NodeToInflux(node *state.Node) (tags models.Tags, fields models.Fields) {
+func nodeToInflux(node *runtime.Node) (tags models.Tags, fields models.Fields) {
 	stats := node.Statistics
 
 	tags.SetString("nodeid", stats.NodeID)

@@ -8,21 +8,21 @@ import (
 	"syscall"
 
 	"github.com/FreifunkBremen/yanic/database"
-	"github.com/FreifunkBremen/yanic/debugdatabase"
-	"github.com/FreifunkBremen/yanic/influxdb"
+	"github.com/FreifunkBremen/yanic/database/exampledatabase"
+	"github.com/FreifunkBremen/yanic/database/influxdb"
 	"github.com/FreifunkBremen/yanic/meshviewer"
 	"github.com/FreifunkBremen/yanic/respond"
 	"github.com/FreifunkBremen/yanic/rrd"
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 	"github.com/FreifunkBremen/yanic/webserver"
 )
 
 var (
 	configFile string
-	config     *state.Config
+	config     *runtime.Config
 	collector  *respond.Collector
 	db         database.DB
-	nodes      *state.Nodes
+	nodes      *runtime.Nodes
 )
 
 func main() {
@@ -37,18 +37,16 @@ func main() {
 		log.SetFlags(0)
 	}
 
-	config = state.ReadConfigFile(configFile)
+	config = runtime.ReadConfigFile(configFile)
 
 	if INFLUXDB_BOOTSTRAP && config.Influxdb.Enable {
 		db = influxdb.New(config)
 		defer db.Close()
-
 	}
 
 	if DEBUGDATABASE_BOOTSTRAP && config.Debug.Enable {
-		db = debugdatabase.New(config)
+		db = exampledatabase.New(config)
 		defer db.Close()
-
 	}
 
 	if db != nil && importPath != "" {
@@ -56,7 +54,7 @@ func main() {
 		return
 	}
 
-	nodes = state.NewNodes(config)
+	nodes = runtime.NewNodes(config)
 	nodes.Start()
 	meshviewer.Start(config, nodes)
 
@@ -83,7 +81,7 @@ func importRRD(path string) {
 	log.Println("importing RRD from", path)
 	for ds := range rrd.Read(path) {
 		db.AddGlobal(
-			&state.GlobalStats{
+			&runtime.GlobalStats{
 				Nodes:   uint32(ds.Nodes),
 				Clients: uint32(ds.Clients),
 			},

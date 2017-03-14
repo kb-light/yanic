@@ -1,4 +1,4 @@
-package state
+package runtime
 
 import (
 	"encoding/json"
@@ -53,7 +53,7 @@ func (nodes *Nodes) Update(nodeID string, res *data.ResponseData) *Node {
 	nodes.Unlock()
 
 	node.Lastseen = now
-	node.Flags.Online = true
+	node.Online = true
 
 	// Update neighbours
 	if val := res.Neighbours; val != nil {
@@ -63,7 +63,7 @@ func (nodes *Nodes) Update(nodeID string, res *data.ResponseData) *Node {
 	// Update nodeinfo
 	if val := res.NodeInfo; val != nil {
 		node.Nodeinfo = val
-		node.Flags.Gateway = val.VPN
+		node.Gateway = val.VPN
 	}
 
 	// Update statistics
@@ -128,7 +128,7 @@ func (nodes *Nodes) expire() {
 			delete(nodes.List, id)
 		} else if node.Lastseen.Before(offlineAfter) {
 			// set to offline
-			node.Flags.Online = false
+			node.Online = false
 		}
 	}
 }

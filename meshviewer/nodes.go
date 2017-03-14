@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/FreifunkBremen/yanic/jsontime"
-	"github.com/FreifunkBremen/yanic/state"
+	"github.com/FreifunkBremen/yanic/runtime"
 )
 
 // NodesV1 struct, to support legacy meshviewer (which are in master branch)
@@ -25,7 +25,7 @@ type NodesV2 struct {
 }
 
 // GetNodesV1 transform data to legacy meshviewer
-func GetNodesV1(nodes *state.Nodes) *NodesV1 {
+func GetNodesV1(nodes *runtime.Nodes) *NodesV1 {
 	meshviewerNodes := &NodesV1{
 		Version:   1,
 		List:      make(map[string]*Node),
@@ -42,8 +42,11 @@ func GetNodesV1(nodes *state.Nodes) *NodesV1 {
 		node := &Node{
 			Firstseen: nodeOrigin.Firstseen,
 			Lastseen:  nodeOrigin.Lastseen,
-			Flags:     nodeOrigin.Flags,
-			Nodeinfo:  nodeOrigin.Nodeinfo,
+			Flags: Flags{
+				Online:  nodeOrigin.Online,
+				Gateway: nodeOrigin.Gateway,
+			},
+			Nodeinfo: nodeOrigin.Nodeinfo,
 		}
 		node.Statistics = NewStatistics(nodeOrigin.Statistics)
 		meshviewerNodes.List[nodeID] = node
@@ -52,7 +55,7 @@ func GetNodesV1(nodes *state.Nodes) *NodesV1 {
 }
 
 // GetNodesV2 transform data to modern meshviewers
-func GetNodesV2(nodes *state.Nodes) *NodesV2 {
+func GetNodesV2(nodes *runtime.Nodes) *NodesV2 {
 	meshviewerNodes := &NodesV2{
 		Version:   2,
 		Timestamp: jsontime.Now(),
@@ -66,8 +69,11 @@ func GetNodesV2(nodes *state.Nodes) *NodesV2 {
 		node := &Node{
 			Firstseen: nodeOrigin.Firstseen,
 			Lastseen:  nodeOrigin.Lastseen,
-			Flags:     nodeOrigin.Flags,
-			Nodeinfo:  nodeOrigin.Nodeinfo,
+			Flags: Flags{
+				Online:  nodeOrigin.Online,
+				Gateway: nodeOrigin.Gateway,
+			},
+			Nodeinfo: nodeOrigin.Nodeinfo,
 		}
 		node.Statistics = NewStatistics(nodeOrigin.Statistics)
 		meshviewerNodes.List = append(meshviewerNodes.List, node)
@@ -76,12 +82,12 @@ func GetNodesV2(nodes *state.Nodes) *NodesV2 {
 }
 
 // Start all services to manage Nodes
-func Start(config *state.Config, nodes *state.Nodes) {
+func Start(config *runtime.Config, nodes *runtime.Nodes) {
 	go worker(config, nodes)
 }
 
 // Periodically saves the cached DB to json file
-func worker(config *state.Config, nodes *state.Nodes) {
+func worker(config *runtime.Config, nodes *runtime.Nodes) {
 	c := time.Tick(config.Nodes.SaveInterval.Duration)
 
 	for range c {
@@ -89,7 +95,7 @@ func worker(config *state.Config, nodes *state.Nodes) {
 	}
 }
 
-func saveMeshviewer(config *state.Config, nodes *state.Nodes) {
+func saveMeshviewer(config *runtime.Config, nodes *runtime.Nodes) {
 	// Locking foo
 	nodes.RLock()
 	defer nodes.RUnlock()
@@ -97,15 +103,15 @@ func saveMeshviewer(config *state.Config, nodes *state.Nodes) {
 		version := config.Meshviewer.Version
 		switch version {
 		case 1:
-			state.SaveJSON(GetNodesV1(nodes), path)
+			runtime.SaveJSON(GetNodesV1(nodes), path)
 		case 2:
-			state.SaveJSON(GetNodesV2(nodes), path)
+			runtime.SaveJSON(GetNodesV2(nodes), path)
 		default:
 			log.Panicf("invalid nodes version: %d", version)
 		}
 	}
 
 	if path := config.Meshviewer.GraphPath; path != "" {
-		state.SaveJSON(BuildGraph(nodes), path)
+		runtime.SaveJSON(BuildGraph(nodes), path)
 	}
 }
